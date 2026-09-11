@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FILMAX - مشاهدة الأفلام</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #141414; color: #fff; font-family: Arial, sans-serif; }
+    header { background-color: #000; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-bottom: 2px solid #e50914; }
+    .logo { color: #e50914; font-size: 28px; font-weight: bold; }
+    nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    nav a { color: #ccc; text-decoration: none; font-size: 14px; }
+    nav a:hover { color: #e50914; }
+    .search-box { margin: 15px auto; text-align: center; padding: 0 10px; }
+    .search-box input { padding: 10px; width: 80%; max-width: 400px; border-radius: 20px; border: none; outline: none; font-size: 16px; }
+    .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 15px; }
+    .movie-card { background-color: #1f1f1f; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.4); text-align: center; }
+    .movie-card img { width: 100%; height: 210px; object-fit: cover; }
+    .movie-card h3 { font-size: 13px; margin: 8px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .movie-card span { color: #ffc107; font-size: 12px; margin-bottom: 8px; display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">FILMAX 🎬</div>
+    <nav>
+      <ul>
+        <li><a href="#" onclick="getMovies('popular')">🎬 الرئيسية</a></li>
+        <li><a href="#" onclick="getMovies('now_playing')">🔥 أفلام جديدة</a></li>
+        <li><a href="#" onclick="getMovies('top_rated')">⭐ الأكثر تقييماً</a></li>
+      </ul>
+    </nav>
+  </header>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="🔍 البحث على أي فيلم..." onkeyup="searchMovie()">
+  </div>
+  <div class="movies-grid" id="moviesContainer"></div>
+  <script>
+    const API_KEY = '3fd2be6f0cd0206365c148d288d39728';
+    const API_URL = 'https://api.themoviedb.org/3/movie/';
+    const SEARCH_URL = 'https://api.themoviedb.org/3/search/movie?api_key=' + API_KEY + '&query=';
+    const IMG_PATH = 'https://image.tmdb.org/t/p/w500';
+
+    getMovies('popular');
+
+    async function getMovies(category) {
+      const res = await fetch(`${API_URL}${category}?api_key=${API_KEY}&language=ar-SA`);
+      const data = await res.json();
+      showMovies(data.results);
+    }
+
+    async function searchMovie() {
+      const query = document.getElementById('searchInput').value;
+      if (query && query.length > 2) {
+        const res = await fetch(SEARCH_URL + query + '&language=ar-SA');
+        const data = await res.json();
+        showMovies(data.results);
+      } else if (query.length === 0) {
+        getMovies('popular');
+      }
+    }
+
+    function showMovies(movies) {
+      const container = document.getElementById('moviesContainer');
+      container.innerHTML = '';
+      movies.forEach(movie => {
+        const poster = movie.poster_path ? IMG_PATH + movie.poster_path : 'https://via.placeholder.com/500x750?text=No+Image';
+        const card = document.createElement('div');
+        card.classList.add('movie-card');
+        card.innerHTML = `
+          <img src="${poster}" alt="${movie.title}">
+          <h3>${movie.title}</h3>
+          <span>⭐ ${movie.vote_average.toFixed(1)}</span>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
